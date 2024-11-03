@@ -1,0 +1,1 @@
+ /home/west/Documents/github/project_ginger_one_stop/.dart_tool/flutter_gen/gen_l10n/app_localizations_en.dart /home/west/Documents/github/project_ginger_one_stop/.dart_tool/flutter_gen/gen_l10n/app_localizations.dart:  /home/west/Documents/github/project_ginger_one_stop/l10n.yaml /home/west/Documents/github/project_ginger_one_stop/lib/src/localization/app_en.arb
