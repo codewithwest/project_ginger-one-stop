@@ -5,7 +5,7 @@ import 'src/app.dart';
 import 'src/settings/settings_controller.dart';
 import 'src/settings/settings_service.dart';
 import 'package:media_kit/media_kit.dart'; // Provides [Player], [Media], [Playlist] etc.
-import 'package:media_kit_video/media_kit_video.dart'; // Provides [VideoController] & [Video] etc.
+// Provides [VideoController] & [Video] etc.
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

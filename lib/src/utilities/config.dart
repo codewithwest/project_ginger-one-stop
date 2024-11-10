@@ -4,6 +4,7 @@ class GraphQLConfiguration {
   GraphQLConfiguration();
 
   final HttpLink httpLink = HttpLink(
+    // 'https://projectgingeronestopserver.vercel.app/graphql',
     'http://127.0.0.1:5000/graphql',
     defaultHeaders: {
       'Content-Type': 'application/json',

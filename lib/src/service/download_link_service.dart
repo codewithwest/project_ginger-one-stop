@@ -25,7 +25,7 @@ class ApiService {
       var response = result.data;
       // final map = response as Map<String, dynamic>;
       // Data mappedResult = Data.fromJson(map);
-      return response?['getDownloadLink'][0];
+      return response?['getYouTubeVideoDownloadData']?[0];
     } catch (e) {
       print(e);
       return null;

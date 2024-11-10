@@ -1,22 +1,13 @@
 import 'dart:io';
-
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:media_kit/media_kit.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:project_ginger_one_stop/src/service/download_link_service.dart';
 import 'package:project_ginger_one_stop/src/utilities/elevated_button.dart';
 import 'package:project_ginger_one_stop/src/utilities/text.dart';
-import 'package:vimeo_video_player/vimeo_video_player.dart';
-import 'dart:convert';
-import 'package:logger/logger.dart';
+import 'package:project_ginger_one_stop/src/video_downloader/video_data.dart';
+import 'package:project_ginger_one_stop/src/video_downloader/video_resolutions_dropdown.dart';
 import 'package:http/http.dart' as http;
-import 'package:universal_html/html.dart' as universal_html;
-import 'package:mime/mime.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'dart:typed_data';
-import 'package:file_saver/file_saver.dart';
+import 'package:provider/provider.dart';
 
 class VideoHandler extends StatefulWidget {
   const VideoHandler({super.key});
@@ -70,6 +61,17 @@ class VideoHandlerState extends State<VideoHandler> {
   }
 }
 
+class DownloadLinkNotifier extends ChangeNotifier {
+  String? _downloadLink = '';
+
+  String? get state => _downloadLink;
+
+  void updateState(String newState) {
+    _downloadLink = newState;
+    notifyListeners();
+  }
+}
+
 class YouTubeVideoDownloader extends StatefulWidget {
   const YouTubeVideoDownloader({super.key});
 
@@ -78,30 +80,35 @@ class YouTubeVideoDownloader extends StatefulWidget {
 }
 
 class _YouTubeVideoDownloaderState extends State<YouTubeVideoDownloader> {
+  final _downloadLinkNotifier = DownloadLinkNotifier();
+
   final TextEditingController controller = TextEditingController();
-  String downloadLink = "";
+  List<Object?> formats = [];
   bool displayTextArea = true;
+  String videoDownloadsDirectory = "";
+  bool downloadComplete = false;
   ApiService apiService = ApiService();
   String errorMessage = "";
-  late Map result;
+  late Map result = {};
+  String downloadedFileName = "";
 
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.sizeOf(context).width;
     double height = MediaQuery.sizeOf(context).height;
 
-    getDownloadLink() async {
+    Future getDownloadLink() async {
       if (controller.text.contains("https://") &&
           controller.text.contains("www.youtube.com")) {
         result = await apiService.getYouTubeDownloadLink(controller.text);
         setState(
           () {
-            if (result['download_link'].runtimeType == String) {
-              downloadLink = result['download_link'];
+            if (result['formats'].runtimeType == List<Object?>) {
+              formats = result['formats'];
               displayTextArea = false;
-              print("The download link: $downloadLink");
+              downloadedFileName = result["title"];
             } else {
-              print("An empty Response was received");
+              throw ("Oops! An empty Response was received");
             }
           },
         );
@@ -112,30 +119,29 @@ class _YouTubeVideoDownloaderState extends State<YouTubeVideoDownloader> {
       }
     }
 
-    // Future<void> downloadFile(String url, String fileName) async {
-    //   final dio = Dio();
-    //   final directory = await getApplicationDocumentsDirectory();
-    //   final path = '${directory.path}/$fileName';
-    //   await dio.download(url, path);
-    // }
-    Future<void> downloadVideo(String videoUrl) async {
-      final response = await http.get(Uri.parse(videoUrl));
+    Future<void> downloadVideo(String? videoUrl) async {
+      final response = await http.get(Uri.parse(videoUrl!));
+
       final downloadsDirectory = await getDownloadsDirectory();
-      final videoDownloadsDirectory =
+      final videoDownloadsDir =
           "${downloadsDirectory?.path}/ginger_one_stop/videos";
       if (response.statusCode == 200) {
         final bytes = response.bodyBytes;
 
         if (!Directory.fromUri(
           Uri(
-            path: videoDownloadsDirectory,
+            path: videoDownloadsDir,
           ),
         ).existsSync()) {
-          await Directory(videoDownloadsDirectory).create(recursive: true);
+          await Directory(videoDownloadsDir).create(recursive: true);
         }
 
-        final file = File('$videoDownloadsDirectory/test_video_down.mp4');
+        final file = File('$videoDownloadsDir/$downloadedFileName.mp4');
         file.writeAsBytesSync(bytes);
+        setState(() {
+          downloadComplete = true;
+          videoDownloadsDirectory = file.path;
+        });
 
         // You can now use the file path to play the video or perform other actions
         print('Video downloaded to: ${file.path}');
@@ -160,58 +166,84 @@ class _YouTubeVideoDownloaderState extends State<YouTubeVideoDownloader> {
     //   ),
     // );
 
-    return Center(
-      child: SizedBox(
-        height: height / 1.8,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            TextUtil(
-              value: displayTextArea == true
-                  ? "Enter Youtube url"
-                  : "Click Link below to download your video",
-              color: displayTextArea == false
-                  ? const Color.fromRGBO(45, 216, 2, 0.976)
-                  : null,
-            ),
-            displayTextArea == true
-                ? SizedBox(
-                    width: width > 1080 ? width / 2.2 : width / 1.5,
-                    child: TextField(
-                      decoration: const InputDecoration(
-                          border: UnderlineInputBorder(),
-                          labelText: "Enter Youtube url",
-                          hintText:
-                              "https://www.youtube.com/watch?v=ECkBOQoB0Xc"),
-                      controller: controller,
+    return ChangeNotifierProvider(
+      create: (context) => _downloadLinkNotifier,
+      child: Center(
+        child: SizedBox(
+          height: height / 1.8,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              downloadComplete
+                  ? TextUtil(
+                      value:
+                          "File Downloaded Succesfully You can the find the file here! \n \n$videoDownloadsDirectory",
+                      color: const Color.fromRGBO(45, 216, 2, 0.976),
+                    )
+                  : TextUtil(
+                      value: displayTextArea == true
+                          ? "Enter Youtube url"
+                          : "Click Link below to download your video",
+                      color: displayTextArea == false
+                          ? const Color.fromRGBO(45, 216, 2, 0.976)
+                          : null,
                     ),
-                  )
-                : SizedBox(),
-            TextUtil(
-              value: errorMessage,
-              color: const Color.fromARGB(237, 206, 9, 26),
-            ),
-            Container(
-              margin: const EdgeInsets.all(30),
-              height: 110,
-              child: ElevatedButtonUtil(
-                icon: Icons.download,
-                buttonName: displayTextArea == true
-                    ? "Get Download Link"
-                    : "Download Video",
-                onClick: () async =>
-                    // getDownloadLink(),
-                    // displayTextArea == false
-                    //     ? await getDownloadLink()
-                    await downloadVideo(
-                  "http://127.0.0.1:5000/",
-                ),
-                width: 250,
-                fontsize: 20,
+              displayTextArea == true
+                  ? SizedBox(
+                      width: width > 1080 ? width / 2.2 : width / 1.5,
+                      child: TextField(
+                        decoration: const InputDecoration(
+                            border: UnderlineInputBorder(),
+                            labelText: "Enter Youtube url",
+                            hintText:
+                                "https://www.youtube.com/watch?v=LjZxeSne67E"),
+                        controller: controller,
+                      ),
+                    )
+                  : downloadComplete
+                      ? const SizedBox(
+                          height: 0,
+                        )
+                      : Column(
+                          children: [
+                            VideoData(
+                              data: result,
+                            ),
+                            VideoResolutionsDropDown(
+                              dataList: formats,
+                            ),
+                          ],
+                        ),
+              TextUtil(
+                value: errorMessage,
+                color: const Color.fromARGB(237, 206, 9, 26),
               ),
-            ),
-          ],
+              Container(
+                margin: const EdgeInsets.all(30),
+                height: 110,
+                child: downloadComplete
+                    ? SizedBox.fromSize()
+                    : ElevatedButtonUtil(
+                        icon: Icons.download,
+                        buttonName: displayTextArea == true
+                            ? "Get Download Link"
+                            : "Download Video",
+                        onClick: () async => displayTextArea == true
+                            ? await getDownloadLink()
+                            : _downloadLinkNotifier._downloadLink!.isEmpty
+                                ? print(
+                                    "Download Link: ${_downloadLinkNotifier._downloadLink}")
+                                : await downloadVideo(
+                                    // "https://rr2---sn-uxa3vh-j2uz.googlevideo.com/videoplayback?expire=1731195218&ei=8pwvZ86cHL_fvdIP3rGyqQE&ip=165.165.108.166&id=o-ANNxX-Oi_COHTzJRwaDtgQHBhi5YOclk_e_csWoqwOJr&itag=249&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&met=1731173618%2C&mh=AT&mm=31%2C29&mn=sn-uxa3vh-j2uz%2Csn-aigl6nsd&ms=au%2Crdu&mv=m&mvi=2&pl=18&rms=au%2Cau&initcwndbps=408750&bui=AQn3pFRCV6vMVjbmlawqAntLsSk96Rz0oXW-a2MUf3WNAmvRsGHGv7m0BcX7j6Qf5L3fCfvsIvslequF&spc=qtApAbAPtSCpwQe5tml6ZvXSdh_VJPJ5z9-MFjDUpyuy3xXciWeVeJMCo53B&vprv=1&svpuc=1&mime=audio%2Fwebm&ns=4ue8zf6JvWTWRmGrk-iy_XwQ&rqh=1&gir=yes&clen=37998343&dur=6064.801&lmt=1731040171480475&mt=1731173111&fvip=5&keepalive=yes&fexp=51299153%2C51312688%2C51326932&c=WEB&sefc=1&txp=4432434&n=Tov7dt_BC_tUWK8&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Cns%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRAIgTDawOtejvB0C96a1PJ8PXKGOh9N7oF19ZKiuudmx8IgCIAnynycIDngRhgzM4EzyejSjTOEr20Ri_Q357JzGHzjr&lsparams=met%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=AGluJ3MwRAIgQNCNAcoOrkd6ixw3JNi8_ZRq2XCoj3StVkUlS6AMYZ0CIBKD1VFT-kogXhoUO4GNJQwDM5YmtWQy_ClyT3TpieW3",
+                                    _downloadLinkNotifier._downloadLink,
+                                  ),
+                        width: 250,
+                        fontsize: 20,
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -236,45 +268,6 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Center(
       child: Text('Profile Screen'),
-    );
-  }
-}
-
-class MyScreen extends StatefulWidget {
-  const MyScreen({Key? key}) : super(key: key);
-  @override
-  State<MyScreen> createState() => MyScreenState();
-}
-
-class MyScreenState extends State<MyScreen> {
-  // Create a [Player] to control playback.
-  late final player = Player();
-  // Create a [VideoController] to handle video output from [Player].
-  late final controller = VideoController(player);
-
-  @override
-  void initState() {
-    super.initState();
-    // Play a [Media] or [Playlist].
-    player.open(Media(
-        'https://user-images.githubusercontent.com/28951144/229373695-22f88f13-d18f-4288-9bf1-c3e078d83722.mp4'));
-  }
-
-  @override
-  void dispose() {
-    player.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.width * 9.0 / 16.0,
-        // Use [Video] widget to display video output.
-        child: Video(controller: controller),
-      ),
     );
   }
 }
