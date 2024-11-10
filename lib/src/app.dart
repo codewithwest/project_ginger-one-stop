@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:project_ginger_one_stop/src/homepage/homepage.dart';
+import 'package:project_ginger_one_stop/src/utilities/config.dart';
 import 'package:project_ginger_one_stop/src/video_downloader/video_handler.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'sample_feature/sample_item_details_view.dart';
@@ -20,17 +21,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final HttpLink httpLink = HttpLink(
-      'https://127.0.0.1:5000/graphql',
-    );
-
     final AuthLink authLink = AuthLink(
-      getToken: () async => 'Bearer <YOUR_PERSONAL_ACCESS_TOKEN>',
+      getToken: () async =>
+          'Bearer hgwvfekwyuedgfcblaeufhcbleuahrpeaifrvheiuvfhnliavhroeufhdvh',
       // OR
       // getToken: () => 'Bearer <YOUR_PERSONAL_ACCESS_TOKEN>',
     );
 
-    final Link link = authLink.concat(httpLink);
+    final Link link = authLink.concat(GraphQLConfiguration().httpLink);
 
     ValueNotifier<GraphQLClient> client = ValueNotifier(
       GraphQLClient(
