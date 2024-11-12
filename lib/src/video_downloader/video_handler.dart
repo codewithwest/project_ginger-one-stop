@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:project_ginger_one_stop/src/provider/colors.dart';
 import 'package:project_ginger_one_stop/src/service/download_link_service.dart';
 import 'package:project_ginger_one_stop/src/utilities/elevated_button.dart';
 import 'package:project_ginger_one_stop/src/utilities/text.dart';
@@ -182,12 +183,13 @@ class _YouTubeVideoDownloaderState extends State<YouTubeVideoDownloader> {
                       color: const Color.fromRGBO(45, 216, 2, 0.976),
                     )
                   : TextUtil(
+                      fontsize: 25,
                       value: displayTextArea == true
                           ? "Enter Youtube url"
                           : "Click Link below to download your video",
                       color: displayTextArea == false
-                          ? const Color.fromRGBO(45, 216, 2, 0.976)
-                          : null,
+                          ? DefaultColors.successColor
+                          : DefaultColors.textDarkColor,
                     ),
               displayTextArea == true
                   ? SizedBox(
@@ -195,7 +197,14 @@ class _YouTubeVideoDownloaderState extends State<YouTubeVideoDownloader> {
                       child: TextField(
                         decoration: const InputDecoration(
                             border: UnderlineInputBorder(),
+                            labelStyle: TextStyle(
+                              fontSize: 18,
+                              color: DefaultColors.placeHolderTextColor,
+                            ),
                             labelText: "Enter Youtube url",
+                            hintStyle: TextStyle(
+                              color: DefaultColors.placeHolderTextColor,
+                            ),
                             hintText:
                                 "https://www.youtube.com/watch?v=LjZxeSne67E"),
                         controller: controller,
@@ -225,6 +234,9 @@ class _YouTubeVideoDownloaderState extends State<YouTubeVideoDownloader> {
                 child: downloadComplete
                     ? SizedBox.fromSize()
                     : ElevatedButtonUtil(
+                        iconColor: displayTextArea == false
+                            ? DefaultColors.successColor
+                            : DefaultColors.textDarkColor,
                         icon: Icons.download,
                         buttonName: displayTextArea == true
                             ? "Get Download Link"

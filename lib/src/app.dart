@@ -39,6 +39,7 @@ class MyApp extends StatelessWidget {
     );
     // Glue the SettingsController to the MaterialApp.
     //
+    print(GraphQLConfiguration().httpLink.uri);
     // The ListenableBuilder Widget listens to the SettingsController for changes.
     // Whenever the user updates their settings, the MaterialApp is rebuilt.
     return ListenableBuilder(

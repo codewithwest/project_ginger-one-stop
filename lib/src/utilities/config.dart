@@ -1,11 +1,15 @@
+import "package:flutter/foundation.dart";
 import "package:graphql_flutter/graphql_flutter.dart";
 
 class GraphQLConfiguration {
   GraphQLConfiguration();
 
   final HttpLink httpLink = HttpLink(
-    // 'https://projectgingeronestopserver.vercel.app/graphql',
-    'https://projectgingeronestopserver.vercel.app/graphql',
+    kDebugMode
+        ?
+        // ? 'http://127.0.0.1:5000/graphql'
+        "https://projectgingeronestopserver-git-dev-codewithwests-projects.vercel.app/graphql"
+        : 'https://projectgingeronestopserver.vercel.app/graphql',
     defaultHeaders: {
       'Content-Type': 'application/json',
       // 'Access-Control-Allow-Origin': '*',

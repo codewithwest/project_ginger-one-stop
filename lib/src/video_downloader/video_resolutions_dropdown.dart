@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:project_ginger_one_stop/src/provider/colors.dart';
 import 'package:project_ginger_one_stop/src/utilities/text.dart';
 import 'package:project_ginger_one_stop/src/video_downloader/video_handler.dart';
 import 'package:provider/provider.dart';
