@@ -12,8 +12,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: FirebaseExtended/action-hosting-deploy@v0
+
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WEBDEV_PROFILE }}
           channelId: live
           projectId: webdev-profile
+      - run: flutter build web --release

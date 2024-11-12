@@ -1,1 +1,0 @@
- /home/west/Documents/github/project_ginger_one_stop/.dart_tool/flutter_build/f21cb8e29a88ee096a6f3248e373ea10/native_assets.yaml: 
