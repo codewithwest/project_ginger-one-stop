@@ -3,8 +3,6 @@ import 'package:project_ginger_one_stop/src/utilities/text.dart';
 
 class VideoData extends StatelessWidget {
   const VideoData({super.key, this.data});
-
-  // ignore: prefer_typing_uninitialized_variables
   final data;
 
   @override
@@ -26,7 +24,7 @@ class VideoData extends StatelessWidget {
         const SizedBox(height: 2),
         TextUtil(
           value:
-              "Size: ${(int.parse(data['formats']?[data['formats'].length - 1]?['filesize_approx'] ?? '0') / 1000000).toStringAsFixed(2)} mb",
+              "Size: ${((data['formats']?[data['formats'].length - 1]?['filesize_approx'] ?? '0') / 1000000).toStringAsFixed(2)} mb",
           fontsize: 16,
         ),
         const SizedBox(height: 2),
@@ -37,7 +35,7 @@ class VideoData extends StatelessWidget {
         const SizedBox(height: 2),
         TextUtil(
           value:
-              "video_duration: ${(int.parse(data?['video_duration']) / 60).toStringAsFixed(2)}min",
+              "video_duration: ${((data?['video_duration']) / 60).toStringAsFixed(2)}min",
           fontsize: 16,
         ),
         const SizedBox(height: 2),

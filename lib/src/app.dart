@@ -1,9 +1,12 @@
+// ignore_for_file: avoid_print
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:project_ginger_one_stop/src/homepage/homepage.dart';
 import 'package:project_ginger_one_stop/src/utilities/config.dart';
-import 'package:project_ginger_one_stop/src/video_downloader/video_handler.dart';
+import 'package:project_ginger_one_stop/src/media_handler/media_handler.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'sample_feature/sample_item_details_view.dart';
 import 'sample_feature/sample_item_list_view.dart';
@@ -39,7 +42,7 @@ class MyApp extends StatelessWidget {
     );
     // Glue the SettingsController to the MaterialApp.
     //
-    print(GraphQLConfiguration().httpLink.uri);
+    kDebugMode ? print(GraphQLConfiguration().httpLink.uri) : null;
     // The ListenableBuilder Widget listens to the SettingsController for changes.
     // Whenever the user updates their settings, the MaterialApp is rebuilt.
     return ListenableBuilder(
@@ -91,8 +94,8 @@ class MyApp extends StatelessWidget {
                   switch (routeSettings.name) {
                     case HomePage.routeName:
                       return const HomePage();
-                    case VideoHandler.routeName:
-                      return const VideoHandler();
+                    case MediaHandler.routeName:
+                      return const MediaHandler();
                     case SettingsView.routeName:
                       return SettingsView(controller: settingsController);
                     case SampleItemDetailsView.routeName:

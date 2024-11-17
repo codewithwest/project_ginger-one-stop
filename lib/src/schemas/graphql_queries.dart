@@ -1,4 +1,4 @@
-class YouTubeDownloadQueries {
+class GraphqlQueries {
   String getDownloadLinkQuery() {
     return """
       query getYouTubeVideoDownloadData(\$link: String!) {

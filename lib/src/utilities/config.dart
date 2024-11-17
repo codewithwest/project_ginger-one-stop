@@ -6,9 +6,8 @@ class GraphQLConfiguration {
 
   final HttpLink httpLink = HttpLink(
     kDebugMode
-        ?
-        // ? 'http://127.0.0.1:5000/graphql'
-        "https://projectgingeronestopserver-git-dev-codewithwests-projects.vercel.app/graphql"
+        ? 'http://127.0.0.1:5000/graphql'
+        //? "https://projectgingeronestopserver-git-dev-codewithwests-projects.vercel.app/graphql"
         : 'https://projectgingeronestopserver.vercel.app/graphql',
     defaultHeaders: {
       'Content-Type': 'application/json',

@@ -4,8 +4,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'src/app.dart';
 import 'src/settings/settings_controller.dart';
 import 'src/settings/settings_service.dart';
-import 'package:media_kit/media_kit.dart'; // Provides [Player], [Media], [Playlist] etc.
-// Provides [VideoController] & [Video] etc.
+import 'package:media_kit/media_kit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

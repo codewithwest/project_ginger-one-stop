@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:project_ginger_one_stop/src/utilities/elevated_button.dart';
 import 'package:project_ginger_one_stop/src/utilities/text.dart';
-import 'package:project_ginger_one_stop/src/video_downloader/video_handler.dart';
+import 'package:project_ginger_one_stop/src/media_handler/media_handler.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -37,7 +37,7 @@ class HomePageState extends State<HomePage> {
                   icon: Icons.video_camera_back,
                   onClick: () => Navigator.restorablePushNamed(
                     context,
-                    VideoHandler.routeName,
+                    MediaHandler.routeName,
                   ),
                 ),
                 ElevatedButtonUtil(
@@ -46,7 +46,7 @@ class HomePageState extends State<HomePage> {
                   icon: Icons.data_array,
                   onClick: () => Navigator.restorablePushNamed(
                     context,
-                    VideoHandler.routeName,
+                    MediaHandler.routeName,
                   ),
                 ),
                 ElevatedButtonUtil(
@@ -55,7 +55,7 @@ class HomePageState extends State<HomePage> {
                   icon: Icons.text_decrease,
                   onClick: () => Navigator.restorablePushNamed(
                     context,
-                    VideoHandler.routeName,
+                    MediaHandler.routeName,
                   ),
                 ),
               ],

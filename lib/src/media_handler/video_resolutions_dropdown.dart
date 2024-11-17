@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:project_ginger_one_stop/src/media_handler/video_handler/video_downloader.dart';
 import 'package:project_ginger_one_stop/src/utilities/text.dart';
-import 'package:project_ginger_one_stop/src/video_downloader/video_handler.dart';
 import 'package:provider/provider.dart';
 
 class VideoResolutionsDropDown extends StatefulWidget {

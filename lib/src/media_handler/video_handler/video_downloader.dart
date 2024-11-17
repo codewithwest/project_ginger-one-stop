@@ -2,65 +2,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:project_ginger_one_stop/src/provider/colors.dart';
-import 'package:project_ginger_one_stop/src/service/download_link_service.dart';
+import 'package:project_ginger_one_stop/src/model/download_link_service.dart';
 import 'package:project_ginger_one_stop/src/utilities/elevated_button.dart';
 import 'package:project_ginger_one_stop/src/utilities/text.dart';
-import 'package:project_ginger_one_stop/src/video_downloader/video_data.dart';
-import 'package:project_ginger_one_stop/src/video_downloader/video_resolutions_dropdown.dart';
+import 'package:project_ginger_one_stop/src/media_handler/video_handler/video_data.dart';
+import 'package:project_ginger_one_stop/src/media_handler/video_handler/video_resolutions_dropdown.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
-
-class VideoHandler extends StatefulWidget {
-  const VideoHandler({super.key});
-
-  @override
-  VideoHandlerState createState() => VideoHandlerState();
-  static const routeName = '/video-handler';
-}
-
-class VideoHandlerState extends State<VideoHandler> {
-  int _currentIndex = 0;
-
-  final List<Widget> _tabs = [
-    const YouTubeVideoDownloader(),
-    const FavoritesScreen(),
-    const ProfileScreen(),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-          title: const TextUtil(
-        value: "Video Handler",
-        fontsize: 26,
-      )),
-      body: _tabs[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (int index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Favorites',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class DownloadLinkNotifier extends ChangeNotifier {
   String? _downloadLink = '';
@@ -101,18 +49,27 @@ class _YouTubeVideoDownloaderState extends State<YouTubeVideoDownloader> {
     Future getDownloadLink() async {
       if (controller.text.contains("https://") &&
           controller.text.contains("www.youtube.com")) {
-        result = await apiService.getYouTubeDownloadLink(controller.text);
-        setState(
-          () {
-            if (result['formats'].runtimeType == List<Object?>) {
-              formats = result['formats'];
-              displayTextArea = false;
-              downloadedFileName = result["title"];
-            } else {
-              throw ("Oops! An empty Response was received");
-            }
-          },
-        );
+        try {
+          result = await apiService.getYouTubeDownloadLink(controller.text);
+
+          setState(
+            () {
+              if (result['formats'].runtimeType == List<Object?>) {
+                formats = result['formats'];
+                displayTextArea = false;
+                downloadedFileName = result["title"];
+              } else {
+                throw ("Oops! An empty Response was received");
+              }
+            },
+          );
+        } catch (exception) {
+          setState(() {
+            errorMessage =
+                "Oops! Looks like something went wrong, Please try again!";
+            throw ("Oops! An empty Response was received");
+          });
+        }
       } else {
         setState(() {
           errorMessage = "Incorrect Url";
@@ -145,9 +102,9 @@ class _YouTubeVideoDownloaderState extends State<YouTubeVideoDownloader> {
         });
 
         // You can now use the file path to play the video or perform other actions
-        print('Video downloaded to: ${file.path}');
+        throw ('Video downloaded to: ${file.path}');
       } else {
-        print('Error downloading video: ${response.statusCode}');
+        throw ('Error downloading video: ${response.statusCode}');
       }
     }
 
@@ -244,10 +201,8 @@ class _YouTubeVideoDownloaderState extends State<YouTubeVideoDownloader> {
                         onClick: () async => displayTextArea == true
                             ? await getDownloadLink()
                             : _downloadLinkNotifier._downloadLink!.isEmpty
-                                ? print(
-                                    "Download Link: ${_downloadLinkNotifier._downloadLink}")
+                                ? throw ("Download Link: ${_downloadLinkNotifier._downloadLink}")
                                 : await downloadVideo(
-                                    // "https://rr2---sn-uxa3vh-j2uz.googlevideo.com/videoplayback?expire=1731195218&ei=8pwvZ86cHL_fvdIP3rGyqQE&ip=165.165.108.166&id=o-ANNxX-Oi_COHTzJRwaDtgQHBhi5YOclk_e_csWoqwOJr&itag=249&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&met=1731173618%2C&mh=AT&mm=31%2C29&mn=sn-uxa3vh-j2uz%2Csn-aigl6nsd&ms=au%2Crdu&mv=m&mvi=2&pl=18&rms=au%2Cau&initcwndbps=408750&bui=AQn3pFRCV6vMVjbmlawqAntLsSk96Rz0oXW-a2MUf3WNAmvRsGHGv7m0BcX7j6Qf5L3fCfvsIvslequF&spc=qtApAbAPtSCpwQe5tml6ZvXSdh_VJPJ5z9-MFjDUpyuy3xXciWeVeJMCo53B&vprv=1&svpuc=1&mime=audio%2Fwebm&ns=4ue8zf6JvWTWRmGrk-iy_XwQ&rqh=1&gir=yes&clen=37998343&dur=6064.801&lmt=1731040171480475&mt=1731173111&fvip=5&keepalive=yes&fexp=51299153%2C51312688%2C51326932&c=WEB&sefc=1&txp=4432434&n=Tov7dt_BC_tUWK8&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Cns%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRAIgTDawOtejvB0C96a1PJ8PXKGOh9N7oF19ZKiuudmx8IgCIAnynycIDngRhgzM4EzyejSjTOEr20Ri_Q357JzGHzjr&lsparams=met%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=AGluJ3MwRAIgQNCNAcoOrkd6ixw3JNi8_ZRq2XCoj3StVkUlS6AMYZ0CIBKD1VFT-kogXhoUO4GNJQwDM5YmtWQy_ClyT3TpieW3",
                                     _downloadLinkNotifier._downloadLink,
                                   ),
                         width: 250,
@@ -258,28 +213,6 @@ class _YouTubeVideoDownloaderState extends State<YouTubeVideoDownloader> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class FavoritesScreen extends StatelessWidget {
-  const FavoritesScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Favorites Screen'),
-    );
-  }
-}
-
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Profile Screen'),
     );
   }
 }
