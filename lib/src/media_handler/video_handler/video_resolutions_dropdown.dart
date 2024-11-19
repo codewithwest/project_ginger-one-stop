@@ -36,7 +36,7 @@ class _VideoResolutionsDropDownState extends State<VideoResolutionsDropDown> {
     final notifier = Provider.of<DownloadLinkNotifier>(context);
 
     return widget.dataList.isEmpty
-        ? const TextUtil(value: "Opps failed to load video resolutions")
+        ? const TextUtil(value: "Oops failed to load video resolutions")
         : DropdownMenu(
             initialSelection: _dropdownValue,
             onSelected: (String? value) {
