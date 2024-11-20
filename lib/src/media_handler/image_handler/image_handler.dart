@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:project_ginger_one_stop/src/model/download_link_service.dart';
@@ -27,6 +26,8 @@ class _ImageHandlerState extends State<ImageHandler> {
   ApiService apiService = ApiService();
   Uint8List? _processedImage;
   bool newImageResponse = false;
+  bool isDownloading = false;
+  bool downloadComplete = false;
 
   ImageHandlerProvider imageHandlerProvider = ImageHandlerProvider();
   _selectImage() async {
@@ -75,7 +76,13 @@ class _ImageHandlerState extends State<ImageHandler> {
     }
   }
 
-  Future<void> downloadImage(Uint8List imageBytes, String imageFormat) async {
+  Future<void> downloadImage(
+    Uint8List imageBytes,
+    String imageFormat,
+  ) async {
+    setState(() {
+      isDownloading = true;
+    });
     DateTime now = DateTime.now();
 
     String formattedTime =
@@ -97,14 +104,18 @@ class _ImageHandlerState extends State<ImageHandler> {
       final file = File(
           "$videoDownloadsDir/$formattedTime.${imageFormat.toLowerCase()}");
       await file.writeAsBytes(imageBytes);
+      setState(() {
+        isDownloading = false;
+        downloadComplete = true;
+      });
       // await tempFile.copy(result);
-      print('Image saved to: ${file.path}');
+      throw ('Image saved to: ${file.path}');
     } catch (e) {
-      print('Error saving file: $e');
+      setState(() {
+        isDownloading = false;
+      });
+      throw ('Error saving file: $e');
     }
-    // } else {
-    //   print('User canceled file saving');
-    // }
   }
 
   @override
@@ -122,10 +133,14 @@ class _ImageHandlerState extends State<ImageHandler> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    TextUtil(
-                      value: "Upload the file you wish to convert",
-                      fontsize: 32,
-                    ),
+                    _processedImage != null
+                        ? SizedBox(
+                            height: 2,
+                          )
+                        : TextUtil(
+                            value: "Upload the file you wish to convert",
+                            fontsize: 32,
+                          ),
                     SizedBox(height: 10),
                     _image != null
                         ? Flexible(
@@ -140,68 +155,103 @@ class _ImageHandlerState extends State<ImageHandler> {
                             ),
                           ),
                     _image != null
-                        ? TextUtil(value: "Desired outputs")
+                        ? _processedImage != null
+                            ? SizedBox(
+                                height: 2,
+                              )
+                            : TextUtil(value: "Desired outputs")
                         : SizedBox(),
                     SizedBox(height: 15),
                     _image != null
-                        ? Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Column(
-                                children: <Widget>[
-                                  TextUtil(value: "Format"),
-                                  SizedBox(height: 5),
-                                  DropDownMenuUtil(
-                                    mappedArray:
-                                        imageHandlerProvider.imageFormats,
-                                    stateValue: data.imageFormat!,
-                                    label: "format",
-                                    value: "value",
-                                    stateUpdater: data.updateProperty,
-                                  ),
-                                ],
-                              ),
-                              SizedBox(width: 5),
-                              Column(
+                        ? _processedImage != null
+                            ? SizedBox(
+                                height: 2,
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  TextUtil(value: "Width"),
-                                  SizedBox(height: 5),
-                                  DropDownMenuUtil(
-                                    mappedArray:
-                                        imageHandlerProvider.imageHeights,
-                                    stateValue: data.imageHeight!,
-                                    label: "height",
-                                    value: "height",
-                                    stateUpdater: data.updateProperty,
+                                  Column(
+                                    children: <Widget>[
+                                      TextUtil(value: "Format"),
+                                      SizedBox(height: 5),
+                                      DropDownMenuUtil(
+                                        mappedArray:
+                                            imageHandlerProvider.imageFormats,
+                                        stateValue: data.imageFormat!,
+                                        label: "format",
+                                        value: "value",
+                                        stateUpdater: data.updateProperty,
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                              SizedBox(width: 5),
-                              Column(
-                                children: [
-                                  TextUtil(value: "Height"),
-                                  SizedBox(height: 5),
-                                  DropDownMenuUtil(
-                                    mappedArray:
-                                        imageHandlerProvider.imageWidths,
-                                    stateValue: data.imageWidth!,
-                                    label: "width",
-                                    value: "width",
-                                    stateUpdater: data.updateProperty,
+                                  SizedBox(width: 5),
+                                  Column(
+                                    children: [
+                                      TextUtil(value: "Width"),
+                                      SizedBox(height: 5),
+                                      DropDownMenuUtil(
+                                        mappedArray:
+                                            imageHandlerProvider.imageHeights,
+                                        stateValue: data.imageHeight!,
+                                        label: "height",
+                                        value: "height",
+                                        stateUpdater: data.updateProperty,
+                                      ),
+                                    ],
                                   ),
+                                  SizedBox(width: 5),
+                                  Column(
+                                    children: [
+                                      TextUtil(value: "Height"),
+                                      SizedBox(height: 5),
+                                      DropDownMenuUtil(
+                                        mappedArray:
+                                            imageHandlerProvider.imageWidths,
+                                        stateValue: data.imageWidth!,
+                                        label: "width",
+                                        value: "width",
+                                        stateUpdater: data.updateProperty,
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(width: 5),
                                 ],
-                              ),
-                              SizedBox(width: 5),
-                            ],
-                          )
+                              )
                         : SizedBox(height: 15),
                     SizedBox(height: 15),
                     newImageResponse
-                        ? ElevatedButtonUtil(
-                            buttonName: "Download",
-                            icon: Icons.download,
-                            onClick: () => downloadImage(
-                                _processedImage!, data.imageFormat!),
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ElevatedButtonUtil(
+                                buttonName: isDownloading
+                                    ? "Downloading.."
+                                    : "Download",
+                                icon: Icons.download,
+                                onClick: isDownloading
+                                    ? () {}
+                                    : () => downloadImage(
+                                        _processedImage!, data.imageFormat!),
+                              ),
+                              ElevatedButtonUtil(
+                                buttonName: "Reset",
+                                icon: Icons.restore,
+                                onClick: () => {
+                                  setState(
+                                    () {
+                                      isDownloading = false;
+                                      _processedImage = null;
+                                      _image = null;
+                                      newImageResponse = false;
+                                      downloadComplete = false;
+                                      data.updateProperty("height", "");
+                                      data.updateProperty("width", "");
+                                      data.updateProperty("format", "");
+                                    },
+                                  )
+                                },
+                              ),
+                            ],
                           )
                         : ElevatedButtonUtil(
                             buttonName:
@@ -212,6 +262,13 @@ class _ImageHandlerState extends State<ImageHandler> {
                                 : () => _uploadImage(data.imageFormat,
                                     data.imageHeight, data.imageWidth),
                           ),
+                    downloadComplete
+                        ? TextUtil(
+                            value: "Download Complete!",
+                            color: Colors.greenAccent,
+                            fontsize: 22,
+                          )
+                        : SizedBox(),
                   ],
                 ),
               )),
