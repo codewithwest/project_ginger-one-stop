@@ -59,7 +59,10 @@ class _ImageHandlerState extends State<ImageHandler> {
   ) async {
     if (_image != null || webImage != null) {
       var request = http.MultipartRequest(
-          'POST', Uri.parse('http://127.0.0.1:5000/uploadImage'));
+          'POST', Uri.parse(kDebugMode
+        ? 'http://127.0.0.1:5000/graphql'
+        //? "https://projectgingeronestopserver-git-dev-codewithwests-projects.vercel.app/graphql"
+        : 'https://projectgingeronestopserver.vercel.app/graphql'));
       var pic = _image != null
           ? await http.MultipartFile.fromPath('file', _image!.path)
           : http.MultipartFile.fromBytes(
