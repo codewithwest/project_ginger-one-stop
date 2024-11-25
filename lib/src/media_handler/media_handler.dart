@@ -38,7 +38,7 @@ class MediaHandlerState extends State<MediaHandler> {
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.ondemand_video_rounded),
+            icon: Icon(Icons.video_collection_outlined),
             label: 'Videos',
           ),
           BottomNavigationBarItem(
@@ -46,8 +46,8 @@ class MediaHandlerState extends State<MediaHandler> {
             label: 'Images',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
+            icon: Icon(Icons.my_library_music_rounded),
+            label: 'Music',
           ),
         ],
       ),
@@ -61,7 +61,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: Text('Profile Screen'),
+      child: Text('Music Handler'),
     );
   }
 }

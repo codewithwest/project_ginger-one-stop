@@ -44,19 +44,23 @@ class HomePageState extends State<HomePage> {
                   buttonName: "Data Handler",
                   width: 210,
                   icon: Icons.data_array,
-                  onClick: () => Navigator.restorablePushNamed(
-                    context,
-                    MediaHandler.routeName,
-                  ),
+                  onClick: true
+                      ? () {}
+                      : () => Navigator.restorablePushNamed(
+                            context,
+                            MediaHandler.routeName,
+                          ),
                 ),
                 ElevatedButtonUtil(
                   buttonName: "Text Handler",
                   width: 210,
                   icon: Icons.text_decrease,
-                  onClick: () => Navigator.restorablePushNamed(
-                    context,
-                    MediaHandler.routeName,
-                  ),
+                  onClick: true
+                      ? () {}
+                      : () => Navigator.restorablePushNamed(
+                            context,
+                            MediaHandler.routeName,
+                          ),
                 ),
               ],
             )
