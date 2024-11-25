@@ -1,7 +1,8 @@
 import 'dart:io';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:project_ginger_one_stop/src/media_handler/image_handler/dowloadHelper.dart';
 import 'package:project_ginger_one_stop/src/model/download_link_service.dart';
 import 'package:project_ginger_one_stop/src/notifiers/image_notifier.dart';
 import 'package:project_ginger_one_stop/src/provider/image_handler.dart';
@@ -23,6 +24,7 @@ class ImageHandler extends StatefulWidget {
 class _ImageHandlerState extends State<ImageHandler> {
   final imageData = ImageData();
   File? _image;
+  Uint8List? webImage;
   ApiService apiService = ApiService();
   Uint8List? _processedImage;
   bool newImageResponse = false;
@@ -31,13 +33,20 @@ class _ImageHandlerState extends State<ImageHandler> {
 
   ImageHandlerProvider imageHandlerProvider = ImageHandlerProvider();
   _selectImage() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
-
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+        // type: FileType.custom,
+        // allowedExtensions: ['jpg', 'png', 'jpeg'],
+        );
     if (result != null) {
-      File file = File(result.files.single.path!);
-      setState(() {
-        _image = file;
-      });
+      if (kIsWeb) {
+        setState(() {
+          webImage = result.files.first.bytes!;
+        });
+      } else {
+        setState(() {
+          _image = File(result.files.single.path!);
+        });
+      }
     } else {
       // User canceled the picker
     }
@@ -48,10 +57,16 @@ class _ImageHandlerState extends State<ImageHandler> {
     String? imageHeight,
     String? imageWidth,
   ) async {
-    if (_image != null) {
+    if (_image != null || webImage != null) {
       var request = http.MultipartRequest(
           'POST', Uri.parse('http://127.0.0.1:5000/uploadImage'));
-      var pic = await http.MultipartFile.fromPath('file', _image!.path);
+      var pic = _image != null
+          ? await http.MultipartFile.fromPath('file', _image!.path)
+          : http.MultipartFile.fromBytes(
+              "file",
+              webImage!,
+              filename: 'image.jpg',
+            );
       request.files.add(pic);
       request.fields.addAll({
         "height": imageHeight ?? "None",
@@ -80,36 +95,42 @@ class _ImageHandlerState extends State<ImageHandler> {
     Uint8List imageBytes,
     String imageFormat,
   ) async {
-    setState(() {
-      isDownloading = true;
-    });
-    DateTime now = DateTime.now();
-
-    String formattedTime =
-        "${now.year}-${now.month}-${now.day}_${now.hour}-${now.minute}-${now.second}";
-
-    final downloadsDirectory = await getDownloadsDirectory();
-    final videoDownloadsDir =
-        "${downloadsDirectory?.path}/ginger_one_stop/images";
-
-    if (!Directory.fromUri(
-      Uri(
-        path: videoDownloadsDir,
-      ),
-    ).existsSync()) {
-      await Directory(videoDownloadsDir).create(recursive: true);
-    }
-
     try {
-      final file = File(
-          "$videoDownloadsDir/$formattedTime.${imageFormat.toLowerCase()}");
-      await file.writeAsBytes(imageBytes);
+      setState(() {
+        isDownloading = true;
+      });
+      DateTime now = DateTime.now();
+
+      String formattedTime =
+          "${now.year}-${now.month}-${now.day}_${now.hour}-${now.minute}-${now.second}";
+      if (kIsWeb) {
+        downloadImageWeb(imageBytes, formattedTime, imageFormat);
+      } else {
+        final downloadsDirectory = await getDownloadsDirectory();
+        print(downloadsDirectory);
+        final videoDownloadsDir =
+            "${downloadsDirectory?.path}/ginger_one_stop/images";
+
+        if (!Directory.fromUri(
+          Uri(
+            path: videoDownloadsDir,
+          ),
+        ).existsSync()) {
+          await Directory(videoDownloadsDir).create(recursive: true);
+        }
+
+        final file = File(
+            "$videoDownloadsDir/$formattedTime.${imageFormat.toLowerCase()}");
+        await file.writeAsBytes(imageBytes);
+      }
+
       setState(() {
         isDownloading = false;
         downloadComplete = true;
       });
-      // await tempFile.copy(result);
-      throw ('Image saved to: ${file.path}');
+      if (kDebugMode) {
+        print('Image saved to:  ');
+      }
     } catch (e) {
       setState(() {
         isDownloading = false;
@@ -142,12 +163,14 @@ class _ImageHandlerState extends State<ImageHandler> {
                             fontsize: 32,
                           ),
                     SizedBox(height: 10),
-                    _image != null
+                    _image != null || webImage != null
                         ? Flexible(
                             flex: 9,
                             child: _processedImage != null
                                 ? Image.memory(_processedImage!)
-                                : Image.file(_image!),
+                                : webImage != null
+                                    ? Image.memory(webImage!)
+                                    : Image.file(_image!),
                           )
                         : Flexible(
                             child: Center(
@@ -162,7 +185,7 @@ class _ImageHandlerState extends State<ImageHandler> {
                             : TextUtil(value: "Desired outputs")
                         : SizedBox(),
                     SizedBox(height: 15),
-                    _image != null
+                    _image != null || webImage != null
                         ? _processedImage != null
                             ? SizedBox(
                                 height: 2,
@@ -241,6 +264,7 @@ class _ImageHandlerState extends State<ImageHandler> {
                                     () {
                                       isDownloading = false;
                                       _processedImage = null;
+                                      webImage = null;
                                       _image = null;
                                       newImageResponse = false;
                                       downloadComplete = false;
@@ -254,10 +278,11 @@ class _ImageHandlerState extends State<ImageHandler> {
                             ],
                           )
                         : ElevatedButtonUtil(
-                            buttonName:
-                                _image == null ? 'Pick Image' : "Upload",
+                            buttonName: _image == null && webImage == null
+                                ? 'Pick Image'
+                                : "Upload",
                             icon: Icons.upload,
-                            onClick: _image == null
+                            onClick: _image == null && webImage == null
                                 ? _selectImage
                                 : () => _uploadImage(data.imageFormat,
                                     data.imageHeight, data.imageWidth),

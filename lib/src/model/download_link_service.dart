@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart';
 import 'package:http_parser/http_parser.dart';
@@ -71,7 +71,9 @@ class ApiService {
       await file.writeAsBytes(bytes);
 
       // You can now use the saved image path to display it or perform other actions
-      print('Image saved to: $path');
+      if (kDebugMode) {
+        print('Image saved to: $path');
+      }
 
       return results.hasException
           ? null //'${results.errors.join(", ")}'

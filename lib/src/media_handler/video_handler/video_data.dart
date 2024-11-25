@@ -3,6 +3,7 @@ import 'package:project_ginger_one_stop/src/utilities/text.dart';
 
 class VideoData extends StatelessWidget {
   const VideoData({super.key, this.data});
+  // ignore: prefer_typing_uninitialized_variables
   final data;
 
   @override
