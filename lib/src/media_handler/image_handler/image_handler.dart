@@ -34,15 +34,18 @@ class _ImageHandlerState extends State<ImageHandler> {
   bool isConverting = false;
   String uploadMessage = "";
   ImageHandlerProvider imageHandlerProvider = ImageHandlerProvider();
-  _selectImage() async {
+
+  void _selectImage(String? imageFormat) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
         // type: FileType.custom,
         // allowedExtensions: ['jpg', 'png', 'jpeg'],
         );
+    print(result?.files.first.extension!);
     if (result != null) {
       if (kIsWeb) {
         setState(() {
           webImage = result.files.first.bytes!;
+          imageData.imageFormat = result.files.first.extension!;
         });
       } else {
         setState(() {
@@ -76,14 +79,14 @@ class _ImageHandlerState extends State<ImageHandler> {
             : http.MultipartFile.fromBytes(
                 "file",
                 webImage!,
-                filename: 'image.jpg',
+                filename: 'image',
               );
-
         request.files.add(pic);
+        print(imageFormat);
         request.fields.addAll({
-          "height": imageHeight ?? "None",
-          "width": imageWidth ?? "None",
-          "format": imageFormat ?? "None"
+          "height": imageHeight!,
+          "width": imageWidth!,
+          "format": imageFormat!
         });
         var response = await request.send();
         if (response.statusCode == 200) {
@@ -298,7 +301,7 @@ class _ImageHandlerState extends State<ImageHandler> {
                               : "Convert",
                       icon: Icons.upload,
                       onClick: _image == null && webImage == null
-                          ? _selectImage
+                          ? () => _selectImage(data.imageFormat)
                           : () => _uploadImage(data.imageFormat,
                               data.imageHeight, data.imageWidth),
                     ),
