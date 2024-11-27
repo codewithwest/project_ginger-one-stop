@@ -13,6 +13,9 @@ class ImageHandlerProvider {
     {"height": "512"},
     {"height": "720"},
     {"height": "1024"},
+    {"height": "1280"},
+    {"height": "1366"},
+    {"height": "1920"},
     {"height": "2048"},
   ];
 
@@ -25,6 +28,9 @@ class ImageHandlerProvider {
     {"width": "512"},
     {"width": "720"},
     {"width": "1024"},
+    {"width": "1280"},
+    {"width": "1366"},
+    {"width": "1920"},
     {"width": "2048"},
   ];
 }

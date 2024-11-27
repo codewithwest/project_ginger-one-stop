@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:project_ginger_one_stop/src/media_handler/image_handler/dowloadHelper.dart';
 import 'package:project_ginger_one_stop/src/model/download_link_service.dart';
 import 'package:project_ginger_one_stop/src/notifiers/image_notifier.dart';
@@ -40,7 +39,6 @@ class _ImageHandlerState extends State<ImageHandler> {
         // type: FileType.custom,
         // allowedExtensions: ['jpg', 'png', 'jpeg'],
         );
-    print(result?.files.first.extension!);
     if (result != null) {
       if (kIsWeb) {
         setState(() {
@@ -82,7 +80,6 @@ class _ImageHandlerState extends State<ImageHandler> {
                 filename: 'image',
               );
         request.files.add(pic);
-        print(imageFormat);
         request.fields.addAll({
           "height": imageHeight!,
           "width": imageWidth!,
